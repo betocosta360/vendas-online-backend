@@ -2,25 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm'
 import {Repository} from 'typeorm'
 import {hash} from 'bcrypt'
-import { createUserDto } from './dtos/createUser.dto';
+import { CreateUserDto } from './dtos/createUser.dto';
 import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  createUser(createUser: createUserDto): UserEntity | PromiseLike<UserEntity> {
-    throw new Error('Method not implemented.');
-  }
    constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>){}
 
   
-    async createUSer(createUserDto: createUserDto):Promise<UserEntity>{
+    async createUSer(CreateUserDto: CreateUserDto):Promise<UserEntity>{
         const saltOrRounds = 10
-        const passwordhashed = await hash(createUserDto.password, saltOrRounds);
+        const passwordhashed = await hash(CreateUserDto.password, saltOrRounds);
 
         return this.userRepository.save({
-            ...createUserDto,
+            ...CreateUserDto,
             typeUser:1,
             password: passwordhashed
         })

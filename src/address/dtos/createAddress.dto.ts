@@ -1,8 +1,18 @@
-export interface createUserDto{
-    name: "string";
-    email: "string";
-    phone: "string";
-    cpf: "string";
-    password: "string"
+import { IsString, IsOptional, IsInt } from 'class-validator'
+export class CreateAddressDto {
+
+    @IsString()
+    @IsOptional()
+    complement: string;
+  
+    @IsInt()
+    numberAddress: number;
+  
+    @IsString()
+    cep: string;
+  
+    @IsInt()
+    cityId: number;
+
 
 }
