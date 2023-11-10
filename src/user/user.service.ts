@@ -12,12 +12,12 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>) { }
 
 
-  async createUSer(CreateUserDto: CreateUserDto): Promise<UserEntity> {
+  async createUSer(createUserDto: CreateUserDto): Promise<UserEntity> {
     const saltOrRounds = 10
-    const passwordhashed = await hash(CreateUserDto.password, saltOrRounds);
+    const passwordhashed = await hash(createUserDto.password, saltOrRounds);
 
     return this.userRepository.save({
-      ...CreateUserDto,
+      ...createUserDto,
       typeUser: 1,
       password: passwordhashed
     })
@@ -28,9 +28,17 @@ export class UserService {
       where: {
         id: userId
       },
-      relations: ['address']
+      relations: {
+        address:{
+          city:{
+            state:true
+          }
+        }
+      }
     })
   }
+  
+
   async getAllUser(): Promise<UserEntity[]> {
     return this.userRepository.find()
   }
@@ -43,6 +51,20 @@ export class UserService {
 
     if (!user) {
       throw new NotFoundException(`UserId: ${userId} Not Found`);
+    }
+
+    return user;
+  }
+
+  async findUserByEmail(email: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Email: ${email} Not Found`);
     }
 
     return user;
