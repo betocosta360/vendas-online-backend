@@ -31,7 +31,7 @@ export class CityService {
             }
         });
         if(!city){
-            throw new NotFoundException(`CityId: ${cityId} not Found`)
+            throw new NotFoundException(`CityId: ${cityId} está cidade não existe`)
         }
         return city
     }

@@ -26,7 +26,7 @@ export class AuthService {
     );
 
     if (!user || !isMatch) {
-      throw new NotFoundException('Email or passord invalid');
+      throw new NotFoundException('Email ou senha invalido');
     }
 
     return {
