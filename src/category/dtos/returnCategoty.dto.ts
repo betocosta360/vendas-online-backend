@@ -1,15 +1,18 @@
 //import { ReturnStateDto } from "src/state/dtos/returnState.dto";
 import { CategoryEntity} from "../entities/category.entity"
 
-export class ReturnCategoryDto{
+export class ReturnCategory {
   id: number;
-    name: string;
-   //state?: ReturnStateDto
+  name: string;
+  amountProducts?: number;
+  products?: ReturnProduct[];
 
-    constructor(categoryEntity: CategoryEntity){
-       this.id = categoryEntity.id;
-       this.name = categoryEntity.name
-
-        //this.state = city.state ? new ReturnStateDto(city.state) : undefined
-   }
+  constructor(categoryEntity: CategoryEntity, amountProducts?: number) {
+    this.id = categoryEntity.id;
+    this.name = categoryEntity.name;
+    this.amountProducts = amountProducts;
+    this.products = categoryEntity.products
+      ? categoryEntity.products.map((product) => new ReturnProduct(product))
+      : undefined;
+  }
 }

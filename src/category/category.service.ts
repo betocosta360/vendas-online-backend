@@ -7,45 +7,120 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class CategoryService {
+  constructor(
+    @InjectRepository(CategoryEntity)
+    private readonly categoryRepository: Repository<CategoryEntity>,
 
-    constructor(
-        @InjectRepository(CategoryEntity)
-        private readonly categoryRepository: Repository<CategoryEntity>
-    ) { }
+    @Inject(forwardRef(() => ProductService))
+    private readonly productService: ProductService,
+  ) {}
 
-    async findAllCategories(): Promise<CategoryEntity[]> {
-        const categories = await this.categoryRepository.find();
+  findAmountCategoryInProducts(
+    category: CategoryEntity,
+    countList: CountProduct[],
+  ): number {
+    const count = countList.find(
+      (itemCount) => itemCount.category_id === category.id,
+    );
 
-        if (!categories || categories.length === 0) {
-            throw new NotFoundException('Categories empty');
+    if (count) {
+      return count.total;
+    }
+
+    return 0;
+  }
+
+  async findAllCategories(): Promise<ReturnCategory[]> {
+    const categories = await this.categoryRepository.find();
+
+    const count = await this.productService.countProdutsByCategoryId();
+
+    if (!categories || categories.length === 0) {
+      throw new NotFoundException('Categories empty');
+    }
+
+    return categories.map(
+      (category) =>
+        new ReturnCategory(
+          category,
+          this.findAmountCategoryInProducts(category, count),
+        ),
+    );
+  }
+
+  async findCategoryById(
+    categoryId: number,
+    isRelations?: boolean,
+  ): Promise<CategoryEntity> {
+    const relations = isRelations
+      ? {
+          products: true,
         }
-        return categories
+      : undefined;
+
+    const category = await this.categoryRepository.findOne({
+      where: {
+        id: categoryId,
+      },
+      relations,
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category id: ${categoryId} not found`);
     }
 
-    async findCategoryByName(name: string):Promise<CategoryEntity>{
-        const category = await this.categoryRepository.findOne({
-            where:{
-                name
-            }
-        })
-        if(!category){
-            throw new NotFoundException('category not found')
-        }
-        return category
+    return category;
+  }
+
+  async findCategoryByName(name: string): Promise<CategoryEntity> {
+    const category = await this.categoryRepository.findOne({
+      where: {
+        name,
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category name ${name} not found`);
     }
 
-    async createCategoryDto(createCategoryDto: CreateCategoryDto):
-     Promise<CategoryEntity>{
-        const category = await this.findCategoryByName(createCategoryDto.name).catch(
-            () => undefined,
-          );
-      
-          if (category) {
-            throw new BadRequestException(
-              `Category name ${createCategoryDto.name} exist`,
-            );
-          }
-        return this.categoryRepository.save(createCategoryDto)
+    return category;
+  }
+
+  async createCategory(
+    createCategory: CreateCategory,
+  ): Promise<CategoryEntity> {
+    const category = await this.findCategoryByName(createCategory.name).catch(
+      () => undefined,
+    );
+
+    if (category) {
+      throw new BadRequestException(
+        `Category name ${createCategory.name} exist`,
+      );
     }
-    
+
+    return this.categoryRepository.save(createCategory);
+  }
+
+  async deleteCategory(categoryId: number): Promise<DeleteResult> {
+    const category = await this.findCategoryById(categoryId, true);
+
+    if (category.products?.length > 0) {
+      throw new BadRequestException('Category with relations.');
+    }
+
+    return this.categoryRepository.delete({ id: categoryId });
+  }
+
+  async editCategory(
+    categoryId: number,
+    updateCategory: UpdateCategory,
+  ): Promise<CategoryEntity> {
+    const category = await this.findCategoryById(categoryId);
+
+    return this.categoryRepository.save({
+      ...category,
+      ...updateCategory,
+    });
+  }
 }
