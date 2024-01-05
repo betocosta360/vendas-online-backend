@@ -5,12 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryEntity } from './entities/category.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([CategoryEntity]),
-    forwardRef(() => ProductModule),
-  ],
+  imports: [ TypeOrmModule.forFeature([CategoryEntity])],
   providers: [CategoryService],
   controllers: [CategoryController],
-  exports: [CategoryService],
+  exports:[CategoryService]
 })
 export class CategoryModule {}

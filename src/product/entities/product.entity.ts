@@ -1,4 +1,3 @@
-
 import { CategoryEntity } from 'src/category/entities/category.entity';
 import {
     ManyToOne,
@@ -7,15 +6,13 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     CreateDateColumn,
-    UpdateDateColumn,
-    OneToMany
-} from 'typeorm'
+    UpdateDateColumn
+} from 'typeorm';
 
 @Entity({ name: 'product' })
 export class ProductEntity {
-    @PrimaryGeneratedColumn('rowid')
+    @PrimaryGeneratedColumn()
     id: number;
-
 
     @Column({ name: 'name', nullable: false })
     name: string;
@@ -29,20 +26,13 @@ export class ProductEntity {
     @Column({ name: 'image', nullable: false })
     image: string;
 
-
     @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date
+    createdAt: Date;
 
     @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date
+    updatedAt: Date;
 
-    // @OneToMany(() => AddressEntity, (address) => address.city)
-    @ManyToOne(
-        () => CategoryEntity,
-        (category: CategoryEntity) => category.products
-    )
+    @ManyToOne(() => CategoryEntity, (category: CategoryEntity) => category.products)
     @JoinColumn({ name: 'category_id', referencedColumnName: 'id' })
     category?: CategoryEntity;
-
-
 }

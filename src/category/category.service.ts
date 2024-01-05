@@ -7,120 +7,58 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class CategoryService {
-  constructor(
-    @InjectRepository(CategoryEntity)
-    private readonly categoryRepository: Repository<CategoryEntity>,
 
-    @Inject(forwardRef(() => ProductService))
-    private readonly productService: ProductService,
-  ) {}
+    constructor(
+        @InjectRepository(CategoryEntity)
+        private readonly categoryRepository: Repository<CategoryEntity>
+    ) { }
 
-  findAmountCategoryInProducts(
-    category: CategoryEntity,
-    countList: CountProduct[],
-  ): number {
-    const count = countList.find(
-      (itemCount) => itemCount.category_id === category.id,
-    );
+    async findAllCategories(): Promise<CategoryEntity[]> {
+        const categories = await this.categoryRepository.find();
 
-    if (count) {
-      return count.total;
-    }
-
-    return 0;
-  }
-
-  async findAllCategories(): Promise<ReturnCategory[]> {
-    const categories = await this.categoryRepository.find();
-
-    const count = await this.productService.countProdutsByCategoryId();
-
-    if (!categories || categories.length === 0) {
-      throw new NotFoundException('Categories empty');
-    }
-
-    return categories.map(
-      (category) =>
-        new ReturnCategory(
-          category,
-          this.findAmountCategoryInProducts(category, count),
-        ),
-    );
-  }
-
-  async findCategoryById(
-    categoryId: number,
-    isRelations?: boolean,
-  ): Promise<CategoryEntity> {
-    const relations = isRelations
-      ? {
-          products: true,
+        if (!categories || categories.length === 0) {
+            throw new NotFoundException('Categories empty');
         }
-      : undefined;
-
-    const category = await this.categoryRepository.findOne({
-      where: {
-        id: categoryId,
-      },
-      relations,
-    });
-
-    if (!category) {
-      throw new NotFoundException(`Category id: ${categoryId} not found`);
+        return categories
     }
 
-    return category;
-  }
+    async findCategoryById(categoryId: number): Promise<CategoryEntity>{
+        const category = await this.categoryRepository.findOne({
+            where:{
+                id: categoryId
+            }
+        })
+        if(!category){
+            throw new NotFoundException(`Category id: ${categoryId} não existe`)
+        }
 
-  async findCategoryByName(name: string): Promise<CategoryEntity> {
-    const category = await this.categoryRepository.findOne({
-      where: {
-        name,
-      },
-    });
-
-    if (!category) {
-      throw new NotFoundException(`Category name ${name} not found`);
+        return category
     }
 
-    return category;
-  }
-
-  async createCategory(
-    createCategory: CreateCategory,
-  ): Promise<CategoryEntity> {
-    const category = await this.findCategoryByName(createCategory.name).catch(
-      () => undefined,
-    );
-
-    if (category) {
-      throw new BadRequestException(
-        `Category name ${createCategory.name} exist`,
-      );
+    async findCategoryByName(name: string):Promise<CategoryEntity>{
+        const category = await this.categoryRepository.findOne({
+            where:{
+                name
+            }
+        })
+        if(!category){
+            throw new NotFoundException('category not found')
+        }
+        return category
     }
 
-    return this.categoryRepository.save(createCategory);
-  }
-
-  async deleteCategory(categoryId: number): Promise<DeleteResult> {
-    const category = await this.findCategoryById(categoryId, true);
-
-    if (category.products?.length > 0) {
-      throw new BadRequestException('Category with relations.');
+    async createCategoryDto(createCategoryDto: CreateCategoryDto):
+     Promise<CategoryEntity>{
+        const category = await this.findCategoryByName(createCategoryDto.name).catch(
+            () => undefined,
+          );
+      
+          if (category) {
+            throw new BadRequestException(
+              `Category name ${createCategoryDto.name} exist`,
+            );
+          }
+        return this.categoryRepository.save(createCategoryDto)
     }
-
-    return this.categoryRepository.delete({ id: categoryId });
-  }
-
-  async editCategory(
-    categoryId: number,
-    updateCategory: UpdateCategory,
-  ): Promise<CategoryEntity> {
-    const category = await this.findCategoryById(categoryId);
-
-    return this.categoryRepository.save({
-      ...category,
-      ...updateCategory,
-    });
-  }
+    
 }
