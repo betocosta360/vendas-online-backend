@@ -3,23 +3,22 @@ import { Column,OneToMany, CreateDateColumn, Entity, PrimaryGeneratedColumn, Upd
 
 
 @Entity({ name: 'cart' })
-export class CartEntity{
-@PrimaryGeneratedColumn('rowid')
-id: number;
+export class CartEntity {
+  @PrimaryGeneratedColumn('rowid')
+  id: number;
 
-@Column({name:'user_id', nullable: false})
-userId: number;
+  @Column({ name: 'user_id', nullable: false })
+  userId: number;
 
-@CreateDateColumn({name: 'created_at'})
-createdAt: Date;
+  @Column({ name: 'active', nullable: false })
+  active: boolean;
 
-@UpdateDateColumn({name: 'update_at'})
-updateAt: Date
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-@UpdateDateColumn({ name: 'updated_at' })
-updatedAt: Date;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
-@OneToMany(() => CartProductEntity, (cartProduct) => cartProduct.cart)
-cartProduct?: CartProductEntity[];
-
+  @OneToMany(() => CartProductEntity, (cartProduct) => cartProduct.cart)
+  cartProduct?: CartProductEntity[];
 }
