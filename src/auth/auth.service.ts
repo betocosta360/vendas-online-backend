@@ -23,7 +23,7 @@ export class AuthService {
     const isMatch = await validatePassword(
       loginDto.password,
       user?.password || '',
-    );
+    )
 
     if (!user || !isMatch) {
       throw new NotFoundException('Email ou senha invalido');
